@@ -1,38 +1,32 @@
 #!/usr/bin/env python3
 
+# SPDX-License-Identifier: GPL-2.0-only
+
 # Copyright (C) @Misko_2083 2019
-# Copyright (C) Johan Malm 2019
+# Copyright (C) Johan Malm 2019-2022
 
-""" Parse gtk theme and set some key/value pairs in jgmenurc """
+""" Create labwc theme to approximate current Gtk theme """
 
-import os
-import sys
-import shlex
-import subprocess
-try:
-    import gi
-except ImportError:
-    print("[gtktheme] fatal: require python3-gi")
-    sys.exit(1)
-
+import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-
-def run(command):
-    """ run a command """
-    proc = subprocess.Popen(shlex.split(command))
-    proc.wait()
+import os
+import sys
+import errno
 
 def fmt(s):
     """ ensure string is at least two characters long """
     if len(s) == 0:
         return "00"
-    elif len(s) == 1:
+    if len(s) == 1:
         return "0{}".format(s)
     return s
 
 def rgb2hex(line):
-    """ convert rgb values to a 6-digit hex string """
+    """ find rgb() value and convert it to a 6-digit hex string """
+    # TODO: improve parsing to cope with alpha(rgb(x,y,z), a);
+    if "alpha" in line:
+        return
     s = line.split("rgb(")
     rgb = s[-1].replace(");", "").split(",")
     r = hex(int(rgb[0]))[2:]
@@ -40,66 +34,95 @@ def rgb2hex(line):
     b = hex(int(rgb[2]))[2:]
     return "{}{}{}".format(fmt(r), fmt(g), fmt(b))
 
-def setconfig(key, value):
-    """ set key/value pain in ~/.config/jgmenu/jgmenurc """
-    filename = os.environ["HOME"] + "/.config/jgmenu/jgmenurc"
-    value = "#{} 100".format(value)
-    print("[gtktheme] {} = {}".format(key, value))
-    cmd = "jgmenu_run config -s {} -k {} -v '{}'".format(filename, key, value)
-    run(cmd)
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
-def process_line(line):
-    """ process one line """
-    if "background-color" in line:
-        setconfig("color_menu_bg", rgb2hex(line))
-        setconfig("color_title_bg", rgb2hex(line))
-        setconfig("color_title_border", rgb2hex(line))
-
-def cache(themename):
-    """ save the theme-name to ~/.cache/jgmenu/.last-gtktheme """
-    print("themename={}".format(themename))
-    directory = os.environ["HOME"] + "/.cache/jgmenu"
-    if not os.path.exists(directory):
-        os.mkdir(directory)
-    f = open(directory + "/.last-gtktheme", "w")
-    f.write(themename)
-    f.close()
+def print_theme(theme):
+    for key, value in theme.items():
+        print("{}: {}".format(key, value))
 
 def main():
     """ main """
     gset = Gtk.Settings.get_default()
     themename = gset.get_property("gtk-theme-name")
-    cache(themename)
-    prefdark = gset.get_property("gtk-application-prefer-dark-theme")
     css = Gtk.CssProvider.get_named(themename).to_string()
 #    print(css)
 #    exit(1)
     lines = css.split("\n")
 
-    # parse some @define-color lines
+    theme = {}
+
+    # parse @define-color lines using syntax "@define-color <key> <value>"
     for line in lines:
         if "@define-color" not in line:
-            break
-        if "theme_text_color" in line:
-            setconfig("color_norm_fg", rgb2hex(line))
-            setconfig("color_title_fg", rgb2hex(line))
-        if "theme_selected_bg_color" in line:
-            setconfig("color_sel_bg", rgb2hex(line))
-        if "theme_selected_fg_color" in line:
-            setconfig("color_sel_fg", rgb2hex(line))
+            continue
+        x = line.split(" ")
+        theme['{}'.format(x[1])] = rgb2hex(line)
 
-    # parse the menu { } section
+    # parse the .csd headerbar { } section
     inside = False
     for line in lines:
-        if "menu {" in line:
+        if ".csd headerbar {" in line:
             inside = True
             continue
         if inside:
-            if "{" in line:
+            if "}" in line or "{" in line:
                 inside = False
                 break
-            process_line(line)
+            line.strip()
+            x = line.split(":")
+            theme['csd.headerbar.{}'.format(x[0].replace(" ", ""))] = rgb2hex(line)
+
+#    print_theme(theme)
+
+    themename = 'GTK'
+    themedir = os.getenv("HOME") + "/.local/share/themes/" + themename + "/openbox-3"
+    mkdir_p(themedir)
+    themefile = themedir + "/themerc"
+    print("Create theme {} at {}".format(themename, themedir))
+
+    f = open(themefile, "w")
+
+    f.write("window.active.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
+    f.write("window.inactive.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
+
+    f.write("window.active.label.text.color: #{}\n".format(theme["theme_fg_color"]))
+    f.write("window.inactive.label.text.color: #{}\n".format(theme["theme_fg_color"]))
+
+    try:
+        f.write("window.active.border.color: #{}\n".format(theme["csd.headerbar.border-top-color"]))
+    except:
+        f.write("window.active.border.color: #{}\n".format(theme["borders"]))
+    f.write("window.inactive.border.color: #{}\n".format(theme["borders"]))
+
+    f.write("window.active.button.unpressed.image.color: #{}\n".format(theme["theme_fg_color"]))
+    f.write("window.inactive.button.unpressed.image.color: #{}\n".format(theme["theme_fg_color"]))
+
+    f.write("menu.items.bg.color: #{}\n".format(theme["theme_bg_color"]))
+    f.write("menu.items.text.color: #{}\n".format(theme["theme_fg_color"]))
+
+    f.write("menu.items.active.bg.color: #{}\n".format(theme["theme_fg_color"]))
+    f.write("menu.items.active.text.color: #{}\n".format(theme["theme_bg_color"]))
+
+    f.write("osd.bg.color: #{}\n".format(theme["theme_bg_color"]))
+    f.write("osd.border.color: #{}\n".format(theme["theme_fg_color"]))
+    f.write("osd.label.text.color: #{}\n".format(theme["theme_fg_color"]))
+
+    # TODO:
+    # border.width: 1
+    # padding.height: 3
+    # menu.overlap.x: 0
+    # menu.overlap.y: 0
+    # window.label.text.justify: center
+    # osd.border.width: 1
+
+    f.close()
 
 if __name__ == '__main__':
     main()
-
