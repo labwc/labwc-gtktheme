@@ -17,7 +17,7 @@ import errno
 def rgb2hex(line):
     """ find rgb() value and convert it to a 6-digit hex string """
     # TODO: improve parsing to cope with alpha(rgb(x,y,z), a);
-    if "alpha" in line:
+    if "alpha" in line or "shade" in line or "rgba" in line:
         return
     s = line.split("rgb(")
     rgb = s[-1].replace(");", "").split(",")
