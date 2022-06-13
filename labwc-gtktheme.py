@@ -84,8 +84,8 @@ def main():
     f.write("window.active.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
     f.write("window.inactive.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
 
-    f.write("window.active.label.text.color: #{}\n".format(theme["theme_fg_color"]))
-    f.write("window.inactive.label.text.color: #{}\n".format(theme["theme_fg_color"]))
+    f.write("window.active.label.text.color: #{}\n".format(theme["theme_text_color"]))
+    f.write("window.inactive.label.text.color: #{}\n".format(theme["theme_text_color"]))
 
     try:
         f.write("window.active.border.color: #{}\n".format(theme["csd.headerbar.border-top-color"]))
