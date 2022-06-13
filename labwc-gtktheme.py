@@ -14,14 +14,6 @@ import os
 import sys
 import errno
 
-def fmt(s):
-    """ ensure string is at least two characters long """
-    if len(s) == 0:
-        return "00"
-    if len(s) == 1:
-        return "0{}".format(s)
-    return s
-
 def rgb2hex(line):
     """ find rgb() value and convert it to a 6-digit hex string """
     # TODO: improve parsing to cope with alpha(rgb(x,y,z), a);
@@ -32,7 +24,7 @@ def rgb2hex(line):
     r = hex(int(rgb[0]))[2:]
     g = hex(int(rgb[1]))[2:]
     b = hex(int(rgb[2]))[2:]
-    return "{}{}{}".format(fmt(r), fmt(g), fmt(b))
+    return "{}{}{}".format(r.zfill(2), g.zfill(2), b.zfill(2))
 
 def mkdir_p(path):
     try:
