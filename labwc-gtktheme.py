@@ -55,7 +55,7 @@ def main():
         if "@define-color" not in line:
             continue
         x = line.split(" ")
-        theme['{}'.format(x[1])] = rgb2hex(line)
+        theme[x[1]] = rgb2hex(line)
 
     # parse the .csd headerbar { } section
     inside = False
