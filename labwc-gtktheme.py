@@ -79,32 +79,31 @@ def main():
     themefile = themedir + "/themerc"
     print("Create theme {} at {}".format(themename, themedir))
 
-    f = open(themefile, "w")
+    with open(themefile, "w") as f:
+        f.write("window.active.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
+        f.write("window.inactive.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
 
-    f.write("window.active.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
-    f.write("window.inactive.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
+        f.write("window.active.label.text.color: #{}\n".format(theme["theme_text_color"]))
+        f.write("window.inactive.label.text.color: #{}\n".format(theme["theme_text_color"]))
 
-    f.write("window.active.label.text.color: #{}\n".format(theme["theme_text_color"]))
-    f.write("window.inactive.label.text.color: #{}\n".format(theme["theme_text_color"]))
+        try:
+            f.write("window.active.border.color: #{}\n".format(theme["csd.headerbar.border-top-color"]))
+        except:
+            f.write("window.active.border.color: #{}\n".format(theme["borders"]))
+        f.write("window.inactive.border.color: #{}\n".format(theme["borders"]))
 
-    try:
-        f.write("window.active.border.color: #{}\n".format(theme["csd.headerbar.border-top-color"]))
-    except:
-        f.write("window.active.border.color: #{}\n".format(theme["borders"]))
-    f.write("window.inactive.border.color: #{}\n".format(theme["borders"]))
+        f.write("window.active.button.unpressed.image.color: #{}\n".format(theme["theme_fg_color"]))
+        f.write("window.inactive.button.unpressed.image.color: #{}\n".format(theme["theme_fg_color"]))
 
-    f.write("window.active.button.unpressed.image.color: #{}\n".format(theme["theme_fg_color"]))
-    f.write("window.inactive.button.unpressed.image.color: #{}\n".format(theme["theme_fg_color"]))
+        f.write("menu.items.bg.color: #{}\n".format(theme["theme_bg_color"]))
+        f.write("menu.items.text.color: #{}\n".format(theme["theme_fg_color"]))
 
-    f.write("menu.items.bg.color: #{}\n".format(theme["theme_bg_color"]))
-    f.write("menu.items.text.color: #{}\n".format(theme["theme_fg_color"]))
+        f.write("menu.items.active.bg.color: #{}\n".format(theme["theme_fg_color"]))
+        f.write("menu.items.active.text.color: #{}\n".format(theme["theme_bg_color"]))
 
-    f.write("menu.items.active.bg.color: #{}\n".format(theme["theme_fg_color"]))
-    f.write("menu.items.active.text.color: #{}\n".format(theme["theme_bg_color"]))
-
-    f.write("osd.bg.color: #{}\n".format(theme["theme_bg_color"]))
-    f.write("osd.border.color: #{}\n".format(theme["theme_fg_color"]))
-    f.write("osd.label.text.color: #{}\n".format(theme["theme_fg_color"]))
+        f.write("osd.bg.color: #{}\n".format(theme["theme_bg_color"]))
+        f.write("osd.border.color: #{}\n".format(theme["theme_fg_color"]))
+        f.write("osd.label.text.color: #{}\n".format(theme["theme_fg_color"]))
 
     # TODO:
     # border.width: 1
@@ -113,8 +112,6 @@ def main():
     # menu.overlap.y: 0
     # window.label.text.justify: center
     # osd.border.width: 1
-
-    f.close()
 
 if __name__ == '__main__':
     main()
