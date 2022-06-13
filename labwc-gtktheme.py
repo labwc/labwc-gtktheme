@@ -67,8 +67,8 @@ def main():
             if "}" in line or "{" in line:
                 inside = False
                 break
-            line.strip()
-            x = line.split(":")
+            line = line.strip()
+            x = line.split(":", maxsplit=1)
             theme['csd.headerbar.{}'.format(x[0].replace(" ", ""))] = rgb2hex(line)
 
 #    print_theme(theme)
