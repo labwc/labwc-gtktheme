@@ -13,44 +13,11 @@ import errno
 import argparse
 import re
 import string
+from tokenize import tokenize, NUMBER, STRING, NAME, OP
+from io import BytesIO
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-
-def tokenize(buf):
-    """
-      Tokenize nested color definitions such as alpha(rgb(r,g,b),a)
-      to ['alpha','rgb','r','g','b','a'], ignoring commas and parenthesis,
-      and return the list of tokens
-    """
-    pos = 0
-    length = len(buf)
-    tokens = []
-    while pos < length:
-        char = buf[pos]
-        if char in '(),':
-            # special characters
-            pass
-        elif char in string.digits + '.':
-            # numbers
-            regex = re.compile(r'\d*[.]?\d*')
-            match = regex.search(buf, pos)
-            if match:
-                value = match.group()
-                tokens.append(value)
-                pos += len(value)
-                continue
-        elif char in string.ascii_letters:
-            # idents
-            regex = re.compile(r'rgb|rgba|alpha|shade|mix')
-            match = regex.search(buf, pos)
-            if match:
-                value = match.group()
-                pos += len(value)
-                tokens.append(value)
-                continue
-        pos += 1
-    return tokens
 
 def rgb(tokens):
     # TODO: check that there are enough elements in list
@@ -66,22 +33,37 @@ def parse(tokens):
        - [ ] shade(<color>,s)
        - [ ] mix(<color>,<color>,m)
     """
-    r = 0; g = 0; b = 0
-    in_alpha = False
-    i = 0
-    while i < len(tokens):
-        t = tokens[i]
-        if t in 'rgb':
-            r, g, b = rgb(tokens[i+1:])
-            i += 3
-        elif in_alpha:
-            # handle 2nd argument of alpha(X, Y)
-            r *= float(t); g *= float(t); b *= float(t)
-            in_alpha = False
-        elif t in 'alpha':
-            in_alpha = True
-        i += 1
-    return r, g, b
+
+#    in_alpha = False
+    nr_colors_to_parse = 0
+    color = []
+
+    for toknum, tokval, _, _, _ in tokens:
+        if nr_colors_to_parse > 0:
+            if toknum == OP and tokval in ')':
+                print("warn: still parsing numbers; did not expect ')'")
+            if toknum == NUMBER:
+                color.append(tokval)
+                nr_colors_to_parse -= 1
+            continue
+        if toknum == NAME and tokval in 'rgb':
+            nr_colors_to_parse = 3
+#        elif in_alpha and toknum == NUMBER and nr_colors_to_parse == 0:
+#           # handle second argument of alpha()
+#            color = [i * float(tokval) for i in color]
+#            in_alpha = False
+#        if toknum == NAME and tokval in 'alpha':
+#            in_alpha = True
+    return color
+
+def rgba(color):
+    if len(color) < 3:
+        print("color is incomplete")
+        return 0, 0, 0, 0
+    if len(color) == 3:
+        return color[0], color[1], color[2], 0
+    if len(color) > 4:
+        return color[0], color[1], color[2], color[3]
 
 def hex_from_expr(line):
     """
@@ -100,8 +82,9 @@ def hex_from_expr(line):
     if 'shade' in line or 'mix' in line or 'rgba' in line or '@' in line:
         return
 
-    tokens = tokenize(line)
-    r, g, b = parse(tokens)
+    tokens = tokenize(BytesIO(line.encode('utf-8')).readline)
+    color = parse(tokens)
+    r, g, b, _ = rgba(color)
     r = hex(int(r))[2:]
     g = hex(int(g))[2:]
     b = hex(int(b))[2:]
