@@ -103,6 +103,12 @@ def print_theme(theme):
     for key, value in theme.items():
         print("{}: {}".format(key, value))
 
+def add(file, key, color):
+    if color == None:
+        print(f"warn: no color for {key}")
+        return
+    file.write(f"{key}: #{color}\n")
+
 def main():
     """ main """
     parser = argparse.ArgumentParser(prog="labwc-gtktheme")
@@ -150,31 +156,28 @@ def main():
     print("Create theme {} at {}".format(themename, themedir))
 
     with open(themefile, "w") as f:
-        #add(f, "window.active.title.bg.color", theme["theme_bg_color"])
-        f.write("window.active.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
-        f.write("window.inactive.title.bg.color: #{}\n".format(theme["theme_bg_color"]))
+        add(f, "window.active.title.bg.color", theme["theme_bg_color"])
+        add(f, "window.inactive.title.bg.color", theme["theme_bg_color"])
 
-        f.write("window.active.label.text.color: #{}\n".format(theme["theme_text_color"]))
-        f.write("window.inactive.label.text.color: #{}\n".format(theme["theme_text_color"]))
+        add(f, "window.active.label.text.color", theme["theme_text_color"])
+        add(f, "window.inactive.label.text.color", theme["theme_text_color"])
 
-        try:
-            f.write("window.active.border.color: #{}\n".format(theme["csd.headerbar.border-top-color"]))
-        except:
-            f.write("window.active.border.color: #{}\n".format(theme["borders"]))
-        f.write("window.inactive.border.color: #{}\n".format(theme["borders"]))
+#        add(f, "window.active.border.color", theme["csd.headerbar.border-top-color"])
+        add(f, "window.active.border.color", theme["borders"])
+        add(f, "window.inactive.border.color", theme["borders"])
 
-        f.write("window.active.button.unpressed.image.color: #{}\n".format(theme["theme_fg_color"]))
-        f.write("window.inactive.button.unpressed.image.color: #{}\n".format(theme["theme_fg_color"]))
+        add(f, "window.active.button.unpressed.image.color", theme["theme_fg_color"])
+        add(f, "window.inactive.button.unpressed.image.color", theme["theme_fg_color"])
 
-        f.write("menu.items.bg.color: #{}\n".format(theme["theme_bg_color"]))
-        f.write("menu.items.text.color: #{}\n".format(theme["theme_fg_color"]))
+        add(f, "menu.items.bg.color", theme["theme_bg_color"])
+        add(f, "menu.items.text.color", theme["theme_fg_color"])
 
-        f.write("menu.items.active.bg.color: #{}\n".format(theme["theme_fg_color"]))
-        f.write("menu.items.active.text.color: #{}\n".format(theme["theme_bg_color"]))
+        add(f, "menu.items.active.bg.color", theme["theme_fg_color"])
+        add(f, "menu.items.active.text.color", theme["theme_bg_color"])
 
-        f.write("osd.bg.color: #{}\n".format(theme["theme_bg_color"]))
-        f.write("osd.border.color: #{}\n".format(theme["theme_fg_color"]))
-        f.write("osd.label.text.color: #{}\n".format(theme["theme_fg_color"]))
+        add(f, "osd.bg.color", theme["theme_bg_color"])
+        add(f, "osd.border.color", theme["theme_fg_color"])
+        add(f, "osd.label.text.color", theme["theme_fg_color"])
 
     # TODO:
     # border.width: 1
