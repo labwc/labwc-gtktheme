@@ -30,10 +30,8 @@ def parse(tokens):
        - [ ] mix(<color>,<color>,m)
     """
 
-#    in_alpha = False
     nr_colors_to_parse = 0
     color = []
-
     for toknum, tokval, _, _, _ in tokens:
         if nr_colors_to_parse > 0:
             if toknum == OP and tokval in ')':
@@ -44,12 +42,6 @@ def parse(tokens):
             continue
         if toknum == NAME and tokval in 'rgb':
             nr_colors_to_parse = 3
-#        elif in_alpha and toknum == NUMBER and nr_colors_to_parse == 0:
-#           # handle second argument of alpha()
-#            color = [i * float(tokval) for i in color]
-#            in_alpha = False
-#        if toknum == NAME and tokval in 'alpha':
-#            in_alpha = True
     return color
 
 def rgba(color):
