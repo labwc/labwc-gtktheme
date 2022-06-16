@@ -42,37 +42,24 @@ def parse(tokens):
             continue
         if toknum == NAME and tokval in 'rgb':
             nr_colors_to_parse = 3
+        elif toknum == NAME and tokval in 'rgba':
+            nr_colors_to_parse = 4
     return color
 
-def rgba(color):
+def rgb(color):
+    """ split rgb color, ignoring alpha """
     if len(color) < 3:
         print("color is incomplete")
-        return 0, 0, 0, 0
-    if len(color) == 3:
-        return color[0], color[1], color[2], 0
-    if len(color) > 4:
-        return color[0], color[1], color[2], color[3]
+        return 0, 0, 0
+    return color[0], color[1], color[2]
 
 def hex_from_expr(line):
-    """
-      convert css color expression to 6-digit hex string, where an expression
-      can be any of:
-        - @other-color
-        - rgb(r,g,b)
-        - rgba(r,g,b,a)
-        - alpha(<color>,a)
-        - shade(<color>,s)
-        - mix(<color>,<color>,m)
-      and <color> is one of rgb(r,g,b), @other-color
-    """
-
-    # TODO: don't yet handle 'shade', 'mix', 'rgba' and '@other-color'
-    if 'shade' in line or 'mix' in line or 'rgba' in line or '@' in line:
+    """ parse color expression to return hex style rrggbb """
+    if '@' in line:
         return
-
     tokens = tokenize(BytesIO(line.encode('utf-8')).readline)
     color = parse(tokens)
-    r, g, b, _ = rgba(color)
+    r, g, b = rgb(color)
     r = hex(int(r))[2:]
     g = hex(int(g))[2:]
     b = hex(int(b))[2:]
