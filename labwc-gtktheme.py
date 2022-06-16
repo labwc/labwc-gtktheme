@@ -21,15 +21,10 @@ from gi.repository import Gtk
 
 def parse(tokens):
     """
-      Parse css color expression token list and return red/green/blue values
-       - [ ] @other-color
-       - [x] rgb(r,g,b)
-       - [ ] rgba(r,g,b,a)
-       - [x] alpha(<color>,a)
-       - [ ] shade(<color>,s)
-       - [ ] mix(<color>,<color>,m)
+    Parse css color expression token list and return red/green/blue values
+    Valid name-tokens include 'rgb' and 'rgba', whereas 'alpha', 'shade' and
+    'mix' are ignored. @other-color references are still to be implemented.
     """
-
     nr_colors_to_parse = 0
     color = []
     for toknum, tokval, _, _, _ in tokens:
@@ -46,12 +41,14 @@ def parse(tokens):
             nr_colors_to_parse = 4
     return color
 
-def rgb(color):
-    """ split rgb color, ignoring alpha """
+def color_hex(color):
+    """ return rrggbb color hex from list [r, g, b,...] """
     if len(color) < 3:
-        print("color is incomplete")
-        return 0, 0, 0
-    return color[0], color[1], color[2]
+        return "None"
+    red = hex(int(color[0]))[2:].zfill(2)
+    green = hex(int(color[1]))[2:].zfill(2)
+    blue = hex(int(color[2]))[2:].zfill(2)
+    return f"{red}{green}{blue}"
 
 def hex_from_expr(line):
     """ parse color expression to return hex style rrggbb """
@@ -59,11 +56,7 @@ def hex_from_expr(line):
         return
     tokens = tokenize(BytesIO(line.encode('utf-8')).readline)
     color = parse(tokens)
-    r, g, b = rgb(color)
-    r = hex(int(r))[2:]
-    g = hex(int(g))[2:]
-    b = hex(int(b))[2:]
-    return "{}{}{}".format(r.zfill(2), g.zfill(2), b.zfill(2))
+    return color_hex(color)
 
 def mkdir_p(path):
     try:
