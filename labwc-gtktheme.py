@@ -19,10 +19,6 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-def rgb(tokens):
-    # TODO: check that there are enough elements in list
-    return int(tokens[0]), int(tokens[1]), int(tokens[2])
-
 def parse(tokens):
     """
       Parse css color expression token list and return red/green/blue values
