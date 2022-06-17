@@ -25,8 +25,16 @@ def parse(tokens):
     'mix' are ignored. @other-color references are still to be implemented.
     """
     nr_colors_to_parse = 0
+    in_label = False
     color = []
     for toknum, tokval, _, _, _ in tokens:
+        if '@' in tokval:
+            in_label = True
+            continue
+        if toknum == NAME and in_label:
+            color.clear()
+            color.append(f"@{tokval}")
+            return color
         if nr_colors_to_parse > 0:
             if toknum == OP and tokval in ')':
                 print("warn: still parsing numbers; did not expect ')'")
@@ -42,8 +50,10 @@ def parse(tokens):
 
 def color_hex(color):
     """ return rrggbb color hex from list [r, g, b,...] """
-    if len(color) < 3:
+    if len(color) == 0:
         return "None"
+    elif len(color) < 3:
+        return f"{color[0]}"
     red = hex(int(color[0]))[2:].zfill(2)
     green = hex(int(color[1]))[2:].zfill(2)
     blue = hex(int(color[2]))[2:].zfill(2)
@@ -51,8 +61,6 @@ def color_hex(color):
 
 def hex_from_expr(line):
     """ parse color expression to return hex style rrggbb """
-    if '@' in line:
-        return
     tokens = tokenize(BytesIO(line.encode('utf-8')).readline)
     color = parse(tokens)
     return color_hex(color)
@@ -75,6 +83,15 @@ def add(file, key, color):
         print(f"warn: no color for {key}")
         return
     file.write(f"{key}: #{color}\n")
+
+def resolve_labels(theme):
+    for key, label in theme.items():
+        if '@' in label:
+            for tmp, value in theme.items():
+                if tmp == label[1:]:
+                    theme[f'{key}'] = value
+                    return theme
+    return theme
 
 def main():
     """ main """
@@ -115,6 +132,9 @@ def main():
             theme[f'csd.headerbar.{x[0].replace(" ", "")}'] = hex_from_expr(x[1])
 
 #    print_theme(theme)
+
+    for i in range(0, 100):
+        theme = resolve_labels(theme)
 
     themename = 'GTK'
     themedir = os.getenv("HOME") + "/.local/share/themes/" + themename + "/openbox-3"
