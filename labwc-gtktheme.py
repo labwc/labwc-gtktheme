@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 
 """
-  Create labwc theme based on the current Gtk theme
+Create labwc theme based on the current Gtk theme
 
-  SPDX-License-Identifier: GPL-2.0-only
+SPDX-License-Identifier: GPL-2.0-only
 
-  Copyright (C) @Misko_2083 2019
-  Copyright (C) Johan Malm 2019-2022
+Copyright (C) @Misko_2083 2019
+Copyright (C) Johan Malm 2019-2022
 """
+
 import os
 import errno
 import argparse
-import re
-import string
-from tokenize import tokenize, NUMBER, STRING, NAME, OP
+from tokenize import tokenize, NUMBER, NAME, OP
 from io import BytesIO
 import gi
 gi.require_version("Gtk", "3.0")
@@ -69,10 +68,10 @@ def mkdir_p(path):
 
 def print_theme(theme):
     for key, value in theme.items():
-        print("{}: {}".format(key, value))
+        print(f"{key}: {value}")
 
 def add(file, key, color):
-    if color == None:
+    if color is None:
         print(f"warn: no color for {key}")
         return
     file.write(f"{key}: #{color}\n")
@@ -113,7 +112,7 @@ def main():
                 break
             line = line.strip()
             x = line.split(":", maxsplit=1)
-            theme['csd.headerbar.{}'.format(x[0].replace(" ", ""))] = hex_from_expr(x[1])
+            theme[f'csd.headerbar.{x[0].replace(" ", "")}'] = hex_from_expr(x[1])
 
 #    print_theme(theme)
 
@@ -121,7 +120,7 @@ def main():
     themedir = os.getenv("HOME") + "/.local/share/themes/" + themename + "/openbox-3"
     mkdir_p(themedir)
     themefile = themedir + "/themerc"
-    print("Create theme {} at {}".format(themename, themedir))
+    print(f"Create theme {themename} at {themedir}")
 
     with open(themefile, "w") as f:
         add(f, "window.active.title.bg.color", theme["theme_bg_color"])
