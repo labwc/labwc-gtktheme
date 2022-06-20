@@ -80,6 +80,23 @@ def add(file, key, color):
         return
     file.write(f"{key}: #{color}\n")
 
+def parse_section(lines, name):
+    theme = {}
+    inside = False
+    for line in lines:
+        if f"{name} {{" in line:
+            inside = True
+            continue
+        if inside:
+            if "}" in line or "{" in line:
+                inside = False
+                break
+            if 'color' not in line:
+                continue
+            x = line.strip().split(":", maxsplit=1)
+            theme[f'{name}.{x[0].replace(" ", "")}'] = hex_from_expr(x[1])
+    return theme
+
 def resolve_labels(theme):
     for key, label in theme.items():
         if '@' in label:
@@ -114,19 +131,9 @@ def main():
         x = line.split(" ", maxsplit=2)
         theme[x[1]] = hex_from_expr(x[2])
 
-    # parse the headerbar { } section
-    inside = False
-    for line in lines:
-        if "headerbar {" in line:
-            inside = True
-            continue
-        if inside:
-            if "}" in line or "{" in line:
-                inside = False
-                break
-            line = line.strip()
-            x = line.split(":", maxsplit=1)
-            theme[f'headerbar.{x[0].replace(" ", "")}'] = hex_from_expr(x[1])
+    # Add the color definitions in the headerbar{} and menu{} sections
+    theme |= parse_section(lines, "headerbar")
+    theme |= parse_section(lines, "menu")
 
     theme = resolve_labels(theme)
 
@@ -154,7 +161,7 @@ def main():
         add(f, "window.active.button.unpressed.image.color", theme["theme_fg_color"])
         add(f, "window.inactive.button.unpressed.image.color", theme["theme_fg_color"])
 
-        add(f, "menu.items.bg.color", theme["theme_bg_color"])
+        add(f, "menu.items.bg.color", theme["menu.background-color"])
         add(f, "menu.items.text.color", theme["theme_fg_color"])
 
         add(f, "menu.items.active.bg.color", theme["theme_fg_color"])
