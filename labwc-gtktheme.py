@@ -74,10 +74,6 @@ def mkdir_p(path):
         else:
             raise
 
-def print_theme(theme):
-    for key, value in theme.items():
-        print(f"{key}: {value}")
-
 def add(file, key, color):
     if color is None:
         print(f"warn: no color for {key}")
@@ -90,20 +86,21 @@ def resolve_labels(theme):
             for tmp, value in theme.items():
                 if tmp == label[1:]:
                     theme[f'{key}'] = value
-                    return theme
+                    return resolve_labels(theme)
     return theme
 
 def main():
     """ main """
     parser = argparse.ArgumentParser(prog="labwc-gtktheme")
-    parser.add_argument("--dump-css", help="dump css and exit", action='store_true')
+    parser.add_argument("--css", help="dump css and exit", action='store_true')
+    parser.add_argument("--colors", help="dump colors and exit", action='store_true')
     args = parser.parse_args()
 
     gset = Gtk.Settings.get_default()
     themename = gset.get_property("gtk-theme-name")
     css = Gtk.CssProvider.get_named(themename).to_string()
 
-    if args.dump_css:
+    if args.css:
         print(css)
         return
 
@@ -117,10 +114,10 @@ def main():
         x = line.split(" ", maxsplit=2)
         theme[x[1]] = hex_from_expr(x[2])
 
-    # parse the .csd headerbar { } section
+    # parse the headerbar { } section
     inside = False
     for line in lines:
-        if ".csd headerbar {" in line:
+        if "headerbar {" in line:
             inside = True
             continue
         if inside:
@@ -129,12 +126,14 @@ def main():
                 break
             line = line.strip()
             x = line.split(":", maxsplit=1)
-            theme[f'csd.headerbar.{x[0].replace(" ", "")}'] = hex_from_expr(x[1])
+            theme[f'headerbar.{x[0].replace(" ", "")}'] = hex_from_expr(x[1])
 
-#    print_theme(theme)
+    theme = resolve_labels(theme)
 
-    for i in range(0, 100):
-        theme = resolve_labels(theme)
+    if args.colors:
+        for key, value in theme.items():
+            print(f"{key}: {value}")
+        return
 
     themename = 'GTK'
     themedir = os.getenv("HOME") + "/.local/share/themes/" + themename + "/openbox-3"
@@ -149,8 +148,7 @@ def main():
         add(f, "window.active.label.text.color", theme["theme_text_color"])
         add(f, "window.inactive.label.text.color", theme["theme_text_color"])
 
-#        add(f, "window.active.border.color", theme["csd.headerbar.border-top-color"])
-        add(f, "window.active.border.color", theme["borders"])
+        add(f, "window.active.border.color", theme["headerbar.border-top-color"])
         add(f, "window.inactive.border.color", theme["borders"])
 
         add(f, "window.active.button.unpressed.image.color", theme["theme_fg_color"])
