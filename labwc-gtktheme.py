@@ -50,14 +50,11 @@ def parse(tokens):
 
 def color_hex(color):
     """ return rrggbb color hex from list [r, g, b,...] """
-    if len(color) == 0:
+    if not color:
         return "None"
     elif len(color) < 3:
         return f"{color[0]}"
-    red = hex(int(color[0]))[2:].zfill(2)
-    green = hex(int(color[1]))[2:].zfill(2)
-    blue = hex(int(color[2]))[2:].zfill(2)
-    return f"{red}{green}{blue}"
+    return "".join(hex(int(c))[2:].zfill(2) for c in color[:3])
 
 def hex_from_expr(line):
     """ parse color expression to return hex style rrggbb """
@@ -93,8 +90,8 @@ def parse_section(lines, name):
                 break
             if 'color' not in line:
                 continue
-            x = line.strip().split(":", maxsplit=1)
-            theme[f'{name}.{x[0].replace(" ", "")}'] = hex_from_expr(x[1])
+            key, value = line.strip().split(":", maxsplit=1)
+            theme[f'{name}.{key.replace(" ", "")}'] = hex_from_expr(value)
     return theme
 
 def resolve_labels(theme):
@@ -102,7 +99,7 @@ def resolve_labels(theme):
         if '@' in label:
             for tmp, value in theme.items():
                 if tmp == label[1:]:
-                    theme[f'{key}'] = value
+                    theme[key] = value
                     return resolve_labels(theme)
     return theme
 
