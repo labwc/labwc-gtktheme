@@ -54,7 +54,7 @@ def color_hex(color):
         return "None"
     elif len(color) < 3:
         return f"{color[0]}"
-    return "".join(hex(int(c))[2:].zfill(2) for c in color[:3])
+    return '{:02x}{:02x}{:02x}'.format(*(int(x) for x in color[:3]))
 
 def hex_from_expr(line):
     """ parse color expression to return hex style rrggbb """
