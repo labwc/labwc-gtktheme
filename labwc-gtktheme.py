@@ -129,8 +129,8 @@ def main():
         theme[x[1]] = hex_from_expr(x[2])
 
     # Add the color definitions in the headerbar{} and menu{} sections
-    theme |= parse_section(lines, "headerbar")
-    theme |= parse_section(lines, "menu")
+    theme.update(parse_section(lines, "headerbar"))
+    theme.update(parse_section(lines, "menu"))
 
     theme = resolve_labels(theme)
 
