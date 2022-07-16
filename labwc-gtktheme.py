@@ -87,7 +87,7 @@ def parse_section(lines, name):
         if inside:
             if "}" in line or "{" in line:
                 inside = False
-                break
+                continue
             if 'color' not in line:
                 continue
             key, value = line.strip().split(":", maxsplit=1)
