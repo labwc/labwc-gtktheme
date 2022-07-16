@@ -158,7 +158,7 @@ def main():
         add(f, "window.inactive.label.text.color", theme["theme_text_color"])
 
         add(f, "window.active.border.color", theme["headerbar.border-top-color"])
-        add(f, "window.inactive.border.color", theme["borders"])
+        add(f, "window.inactive.border.color", theme["headerbar.border-top-color"])
 
         add(f, "window.active.button.unpressed.image.color", theme["theme_fg_color"])
         add(f, "window.inactive.button.unpressed.image.color", theme["theme_fg_color"])
