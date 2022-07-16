@@ -134,6 +134,11 @@ def main():
 
     theme = resolve_labels(theme)
 
+    # Set fallbacks
+    # Most themes contain headerbar.border-top-color, but Materia does not
+    if not 'headerbar.border-top-color' in theme.keys():
+        theme[f'headerbar.border-top-color'] = theme["theme_bg_color"]
+
     if args.colors:
         for key, value in theme.items():
             print(f"{key}: {value}")
