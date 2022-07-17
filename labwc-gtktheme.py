@@ -10,7 +10,6 @@ Copyright (C) Johan Malm 2019-2022
 """
 
 import os
-import sys
 import errno
 import argparse
 from tokenize import tokenize, NUMBER, NAME, OP
@@ -106,8 +105,6 @@ def resolve_labels(theme):
 
 def main():
     """ main """
-    sys.setrecursionlimit(10**6)
-
     parser = argparse.ArgumentParser(prog="labwc-gtktheme")
     parser.add_argument("--css", help="dump css and exit", action='store_true')
     parser.add_argument("--colors", help="dump colors and exit", action='store_true')
