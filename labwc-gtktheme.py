@@ -94,6 +94,15 @@ def parse_section(lines, name):
             theme[f'{name}.{key.replace(" ", "")}'] = hex_from_expr(value)
     return theme
 
+def remove_self_referencing_entries(theme):
+    for key, label in theme.items():
+        if f'@{key}' == f'{label}':
+            # A self-referencing line like @define-color foo @foo is bad
+            print(f'warn: ignore bad line @define-color {key} {label}')
+            theme.pop(key)
+            return remove_self_referencing_entries(theme)
+    return theme
+
 def resolve_labels(theme):
     for key, label in theme.items():
         if '@' in label:
@@ -132,6 +141,7 @@ def main():
     theme.update(parse_section(lines, "headerbar"))
     theme.update(parse_section(lines, "menu"))
 
+    theme = remove_self_referencing_entries(theme)
     theme = resolve_labels(theme)
 
     # Set fallbacks
