@@ -7,6 +7,9 @@ SPDX-License-Identifier: GPL-2.0-only
 
 Copyright (C) @Misko_2083 2019
 Copyright (C) Johan Malm 2019-2022
+
+https://docs.gtk.org/gtk3/css-overview.html
+
 """
 
 import os
@@ -17,6 +20,7 @@ from io import BytesIO
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+from base64 import b64decode
 
 def parse(tokens):
     """
@@ -112,6 +116,39 @@ def resolve_labels(theme):
                     return resolve_labels(theme)
     return theme
 
+def create_one_icon(lines, nodename, filename):
+    """
+    The data contains entries like the one below (base64 strings truncated).
+    We merely split the string at 'base64,' and '\"' to get the x1 size icons.
+    TODO: Parse this better, maybe with a recursive descendant approach.
+
+    button.close.titlebutton {
+      background-image: -gtk-scaled(url("data:image/png;base64,iVBORw0..."),url("data:image/png;base64,iVBORw0..."));
+    }
+    """
+    theme = {}
+    inside = False
+    for line in lines:
+        if f"{nodename} {{" in line:
+            inside = True
+            continue
+        if inside:
+            if "}" in line or "{" in line:
+                inside = False
+                continue
+            key, value = line.strip().split(":", maxsplit=1)
+            key = key.replace(" ", "");
+            if key == "background-image":
+                value = value.split("base64,", maxsplit=1)[1]
+                value = value.split('\"', maxsplit=1)[0]
+                with open(filename, 'wb') as f:
+                    f.write(b64decode(value))
+
+def create_icons(lines, themedir):
+    create_one_icon(lines, "button.close.titlebutton", themedir + "/close-active.png")
+    create_one_icon(lines, "button.maximize.titlebutton", themedir + "/max-active.png")
+    create_one_icon(lines, "button.minimize.titlebutton", themedir + "/iconify-active.png")
+
 def main():
     """ main """
     parser = argparse.ArgumentParser(prog="labwc-gtktheme")
@@ -190,6 +227,8 @@ def main():
     # menu.overlap.y: 0
     # window.label.text.justify: center
     # osd.border.width: 1
+
+    create_icons(lines, themedir);
 
 if __name__ == '__main__':
     main()
