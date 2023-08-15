@@ -7,6 +7,9 @@ SPDX-License-Identifier: GPL-2.0-only
 
 Copyright (C) @Misko_2083 2019
 Copyright (C) Johan Malm 2019-2022
+
+https://docs.gtk.org/gtk3/css-overview.html
+
 """
 
 import os
