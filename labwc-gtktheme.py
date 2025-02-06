@@ -117,10 +117,14 @@ def main():
     parser = argparse.ArgumentParser(prog="labwc-gtktheme")
     parser.add_argument("--css", help="dump css and exit", action='store_true')
     parser.add_argument("--colors", help="dump colors and exit", action='store_true')
+    parser.add_argument("--themename",
+        help="use this theme rather than autodetecting the used one")
     args = parser.parse_args()
 
-    gset = Gtk.Settings.get_default()
-    themename = gset.get_property("gtk-theme-name")
+    themename = args.themename
+    if not themename:
+        gset = Gtk.Settings.get_default()
+        themename = gset.get_property("gtk-theme-name")
     css = Gtk.CssProvider.get_named(themename).to_string()
 
     if args.css:
