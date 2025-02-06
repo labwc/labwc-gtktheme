@@ -3,7 +3,7 @@
 `labwc-gtktheme.py` - A tool to parse the current [GTK theme], particularly
 [colors] and produce an [openbox]/[labwc] theme.
 
-Set the theme in `GTK` in your `~/.config/labwc/rc.xml` to use it.
+Set the theme to `GTK` in your `~/.config/labwc/rc.xml` to use it.
 
 ```
 <theme>
